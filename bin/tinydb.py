@@ -7,6 +7,7 @@ class TinyDB:
 		self.parser.add_argument("--db", required = True)
 		self.parser.add_argument("-v", action = 'store_true')
 		self.parser.add_argument("--dimensions", type=int, default = dimensions)
+		self.parser.add_argument("-n", type=int, default = -1)
 		if parse_args:
 			self.parse_args()
 
@@ -18,6 +19,7 @@ class TinyDB:
 		self.verbose = rp.v
 		self.dimensions = rp.dimensions
 		self.dbname = rp.db
+		self.n = rp.n
 		return rp
 
 	def status_msg(self, n, fpos, fsiz):
@@ -41,7 +43,19 @@ class TinyDB:
 			if self.verbose and self.cnt % 10000 == 0:
 				self.status_msg(self.cnt, self.f.tell(), os.path.getsize(self.dbname))
 			yield data
+			if self.n > -1 and self.cnt >= self.n:
+				break
 		self.f.close()
+
+	def groups(self, n):
+		r = []
+		for i in self.chunks():
+			r.append(i)
+			if len(r) == n:
+				yield r
+				r = []
+		if len(r) > 0:
+			yield r
 
 	def at(self, idx):
 		with open(self.dbname) as f:

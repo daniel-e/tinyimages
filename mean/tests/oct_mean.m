@@ -1,5 +1,6 @@
 1;
 
-x=load("data.txt");
+a = argv();
+x=load(a{1});
 y=mean(x);
-save("-ascii", "out_mean_octave.txt", "y");
+save("-ascii", a{2}, "y");

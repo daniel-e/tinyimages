@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import math
+import math, sys
 
-x = [float(i) for i in open("out_mean_py.txt").readline().strip().split(" ")]
-y = [float(i) for i in open("out_mean_octave.txt").readline().strip().split(" ")]
+data = sys.argv[1]
+
+x = [float(i) for i in open(data + "/out_mean_py.txt").readline().strip().split(" ")]
+y = [float(i) for i in open(data + "/out_mean_octave.txt").readline().strip().split(" ")]
 
 assert(len(x) == len(y))
 assert(len(x) == 32 * 32 * 3)

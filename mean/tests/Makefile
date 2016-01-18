@@ -1,22 +1,27 @@
 MEANBIN=../../bin/mean.py
+DST=$(TINYIMAGES_OUT)/tests/mean/
 
-all: test
+all: check test
 
-test: out_mean_py.txt out_mean_octave.txt
-	./cmp.py
+check:
+	make -C .. check
 
-data.bin: create_test_set.py
-	./create_test_set.py
+test: $(DST)/out_mean_py.txt $(DST)/out_mean_octave.txt cmp.py
+	./cmp.py $(DST)
 
-data.txt: create_test_set.py
-	./create_test_set.py
+$(DST)/data.bin: create_test_set.py
+	@mkdir -p $(DST)
+	./create_test_set.py $(DST)
 
-out_mean_py.txt: $(MEANBIN) data.bin
-	$(MEANBIN) --db data.bin -v > out_mean_py.txt.tmp
-	@mv out_mean_py.txt.tmp out_mean_py.txt
+$(DST)/data.txt: create_test_set.py
+	@mkdir -p $(DST)
+	./create_test_set.py $(DST)
 
-out_mean_octave.txt: data.txt oct_mean.m
-	octave -q oct_mean.m
+$(DST)/out_mean_py.txt: $(MEANBIN) $(DST)/data.bin
+	$(MEANBIN) --db $(DST)/data.bin -v -o $(DST)/out_mean_py.txt
+
+$(DST)/out_mean_octave.txt: $(DST)/data.txt oct_mean.m
+	octave -q oct_mean.m $(DST)/data.txt $(DST)/out_mean_octave.txt
 
 clean:
-	rm -f data.bin data.txt out_mean_octave.txt out_mean_py.txt *.tmp
+	rm -rf $(DST)

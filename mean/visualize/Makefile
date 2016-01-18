@@ -1,13 +1,14 @@
-MEANBIN=../bin/mean.py
+MEANBIN=../../bin/mean.py
+MEANFILE=$(TINYIMAGES_OUT)/mean/mean.txt
+DST=$(TINYIMAGES_OUT)/mean/viz/
 
-all: mean viz
+all: check viz
 
-mean:
-	make -C ..
-
-viz: mean
-	@mkdir -p outputs
-	octave -q viz.m
+check:
+	make -C .. check
+viz:
+	@mkdir -p $(DST)
+	octave -q viz.m $(MEANFILE) $(DST)/mean.png $(DST)/mean_stretched.png
 
 clean:
-	rm -rf outputs
+	rm -rf $(DST)

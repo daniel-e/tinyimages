@@ -3,6 +3,7 @@ DST=$(TINYIMAGES_OUT)
 
 BIN_MEAN=bin/mean.py
 BIN_COV=bin/cov.py
+BIN_MOSAIC=bin/mosaic.py
 
 SCRIPT_PCA=octave/pca.m
 SCRIPT_MEANVIZ=octave/meanviz.m
@@ -10,13 +11,14 @@ SCRIPT_MEANVIZ=octave/meanviz.m
 MEANIMG1=$(DST)/mean/mean.png
 MEANIMG2=$(DST)/mean/mean_stretched.png
 
+MOSAICFILE=$(DST)/mosaic/mosaic.jpg
 MEANFILE=$(DST)/mean/mean.txt
 COVFILE=$(DST)/cov/cov.mat
 PCAFILE=$(DST)/pca/u.mat
 
 # -----------------------------------------------------------------------------
 
-all: check mean mean_viz cov pca
+all: check mosaic mean mean_viz cov pca
 
 check:
 	@if [ -z $(TINYIMAGES) ]; then echo "Please set the TINYIMAGES environment variable"; exit 1; fi
@@ -27,6 +29,14 @@ clean:
 
 test:
 	make -C tests
+
+# -----------------------------------------------------------------------------
+
+mosaic: $(MOSAICFILE)
+
+$(MOSAICFILE): $(BIN_MOSAIC) $(TIDB)
+	@mkdir -p $(DST)/mosaic
+	$(BIN_MOSAIC) --db $(TIDB) -o $(MOSAICFILE) -c 20 --seed 123
 
 # -----------------------------------------------------------------------------
 

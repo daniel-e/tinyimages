@@ -30,7 +30,7 @@ def mosaic(images, cols, m = None, col = 0):
 tdb = TinyDB(dimensions = WIDTH * HEIGHT * CHANNELS, parse_args = False)
 p = tdb.arg_parser()
 p.add_argument("-o", required = True)
-p.add_argument("-n", type = int, default = 100)
+p.add_argument("-k", type = int, default = 100)
 p.add_argument("-c", type = int, default = 10)
 p.add_argument("--seed", type = int, default = -1)
 p.add_argument("idx", type = int, nargs = '*')
@@ -47,7 +47,7 @@ else:
 	# select a random set of n images
 	if args.seed != -1:
 		random.seed(args.seed)
-	idx = random.sample(xrange(n), args.n)
+	idx = random.sample(xrange(n), args.k)
 
 m = mosaic(images(tdb, idx, WIDTH, HEIGHT, CHANNELS), args.c)
 

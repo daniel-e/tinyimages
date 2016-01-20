@@ -6,13 +6,13 @@ from parallel import process
 import cv2
 import numpy as np
 
-db = TinyDB()
-db.arg_parser().add_arguments('--image', required = True)
+db = TinyDB(parse_args = False)
+db.arg_parser().add_argument('--image', required = True)
 args = db.parse_args()
 
 d = 32
 
-i = np.uint8(np.reshape(cv2.imread(args.filename[0]), (d, d, 3), order = 'F'))
+i = np.uint8(np.reshape(cv2.imread(args.image), (d, d, 3), order = 'F'))
 b = list(i[:, :, 0].flatten(order = 'F'))
 g = list(i[:, :, 1].flatten(order = 'F'))
 r = list(i[:, :, 2].flatten(order = 'F'))

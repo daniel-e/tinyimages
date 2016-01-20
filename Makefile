@@ -18,7 +18,7 @@ PCAFILE=$(DST)/pca/u.mat
 
 # -----------------------------------------------------------------------------
 
-all: check mosaic mean mean_viz cov pca
+all: check computeknn mosaic mean mean_viz cov pca
 
 check:
 	@if [ -z $(TINYIMAGES) ]; then echo "Please set the TINYIMAGES environment variable"; exit 1; fi
@@ -29,6 +29,13 @@ clean:
 
 test:
 	make -C tests
+
+# -----------------------------------------------------------------------------
+
+computeknn:
+	bin/knn.sh bin/knn.py $(BIN_MOSAIC) $(TIDB) data/images/ $(DST)/knn/
+
+# TODO
 
 # -----------------------------------------------------------------------------
 

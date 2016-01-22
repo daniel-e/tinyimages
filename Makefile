@@ -4,12 +4,15 @@ DST=$(TINYIMAGES_OUT)
 BIN_MEAN=bin/mean.py
 BIN_COV=bin/cov.py
 BIN_MOSAIC=bin/mosaic.py
-BIN_GEN = bin/gen.py
-SH_KNN = bin/knn.sh
+BIN_TOY = bin/gen.py
+BIN_DB2IMG = bin/db2img.py
 BIN_KNN = bin/knn.py
+SH_KNN = bin/knn.sh
+SH_GENKNNIMAGES = bin/genknnimages.sh
 
 SCRIPT_PCA=octave/pca.m
 SCRIPT_MEANVIZ=octave/meanviz.m
+SCRIPT_COVVIZ = octave/covviz.m
 
 MEANIMG1=$(DST)/mean/mean.png
 MEANIMG2=$(DST)/mean/mean_stretched.png
@@ -22,16 +25,23 @@ PCAFILE=$(DST)/pca/u.mat
 KNN_OUT = $(DST)/knn/
 KNN_IMAGES = data/images/
 
-GEN_DIR = $(DST)/gen
-GEN_DATASET = $(GEN_DIR)/imagedb.bin
-GEN_TESTSET = $(GEN_DIR)/testdb.bin
-GEN_LABELS = $(GEN_DIR)/labels.txt
-GEN_TESTLABELS = $(GEN_DIR)/testlabels.txt
-GEN_MOSAICFILE = $(GEN_DIR)/mosaic.jpg
+TOY_DIR = $(DST)/toy
+TOY_DATASET = $(TOY_DIR)/imagedb.bin
+TOY_TESTSET = $(TOY_DIR)/testdb.bin
+TOY_LABELS = $(TOY_DIR)/labels.txt
+TOY_TESTLABELS = $(TOY_DIR)/testlabels.txt
+TOY_MOSAICFILE = $(TOY_DIR)/mosaic.jpg
+TOY_KNNIMAGESOUT = $(TOY_DIR)/images/
+TOY_KNNOUT = $(TOY_DIR)/knn
+TOY_MEANFILE=$(TOY_DIR)/mean.txt
+TOY_MEANIMG1=$(TOY_DIR)/mean.png
+TOY_MEANIMG2=$(TOY_DIR)/mean_stretched.png
+TOY_COVFILE=$(TOY_DIR)/cov.mat
+TOY_COVIMG = $(TOY_DIR)/cov.png
 
 # -----------------------------------------------------------------------------
 
-all: check gen computeknn mosaic mean mean_viz cov pca
+all: check toy computeknn mosaic mean mean_viz cov pca
 
 check:
 	@if [ -z $(TINYIMAGES) ]; then echo "Please set the TINYIMAGES environment variable"; exit 1; fi
@@ -47,48 +57,93 @@ test:
 # SECTION FOR TOY DATASET
 # -----------------------------------------------------------------------------
 
-gen: check gendataset genmosaic genknn
+toy: check toydataset toymosaic toyknn toymean toycov
 
-gendataset: $(GEN_DATASET) $(GEN_TESTSET)
+# TODO: cov, pca, knn on reduced data
+
+toydataset: $(TOY_DATASET) $(TOY_TESTSET)
 
 # we have 5 categories; generate 1.000 images per category
 # = 15MB
-$(GEN_DATASET): $(BIN_GEN)
+$(TOY_DATASET): $(BIN_TOY)
 	@echo "Creating toy dataset ..."
-	@echo "  output: $(GEN_DATASET)"
-	@echo "  output: $(GEN_LABELS)"
-	@mkdir -p $(GEN_DIR)
-	@$(BIN_GEN) -n 1000 -o $(GEN_DATASET) -l $(GEN_LABELS)
+	@echo "  output: $(TOY_DATASET)"
+	@echo "  output: $(TOY_LABELS)"
+	@mkdir -p $(TOY_DIR)
+	@$(BIN_TOY) -n 1000 --seed 1 -o $(TOY_DATASET) -l $(TOY_LABELS)
 
 # we have 5 categories; generate 100 images per category
 # = 1.5MB
-$(GEN_TESTSET): $(BIN_GEN)
+$(TOY_TESTSET): $(BIN_TOY)
 	@echo "Creating toy testset ..."
-	@echo "  output: $(GEN_TESTSET)"
-	@echo "  output: $(GEN_TESTLABELS)"
-	@mkdir -p $(GEN_DIR)
-	@$(BIN_GEN) -n 100 -o $(GEN_TESTSET) -l $(GEN_TESTLABELS)
+	@echo "  output: $(TOY_TESTSET)"
+	@echo "  output: $(TOY_TESTLABELS)"
+	@mkdir -p $(TOY_DIR)
+	@$(BIN_TOY) -n 100 --seed 2 -o $(TOY_TESTSET) -l $(TOY_TESTLABELS)
 
-genmosaic: $(GEN_MOSAICFILE)
+toymosaic: $(TOY_MOSAICFILE)
 
-$(GEN_MOSAICFILE): $(GEN_DATASET)
+$(TOY_MOSAICFILE): $(TOY_DATASET)
 	@echo "Creating toy mosaic ..."
-	@echo "  output: $(GEN_MOSAICFILE)"
-	@echo "  input : $(GEN_DATASET)"
-	@$(BIN_MOSAIC) --db $(GEN_DATASET) --seed 1 -c 20 -k 400 -o $(GEN_MOSAICFILE)
+	@echo "  output: $(TOY_MOSAICFILE)"
+	@echo "  input : $(TOY_DATASET)"
+	@$(BIN_MOSAIC) --db $(TOY_DATASET) --seed 1 -c 20 -k 400 -o $(TOY_MOSAICFILE)
 
 # ---
 
-SH_GENKNNIMAGES = bin/genknnimages.sh
-GEN_KNNIMAGESOUT = $(GEN_DIR)/images/
+toyknn: toyknnimages toycomputeknn
 
-genknnimages: check $(SH_GENKNNIMAGES) $(GEN_TESTSET)
+toyknnimages: check $(SH_GENKNNIMAGES) $(TOY_TESTSET)
 	@echo "Creating images for knn on toy dataset ..."
-	@echo "  output: $(GEN_KNNIMAGESOUT)"
-	@echo "  input : $(GEN_TESTSET)"
-	@$(SH_GENKNNIMAGES) $(GEN_TESTSET) $(GEN_KNNIMAGESOUT)
+	@echo "  output: $(TOY_KNNIMAGESOUT)"
+	@echo "  input : $(TOY_TESTSET)"
+	@$(SH_GENKNNIMAGES) $(BIN_DB2IMG) 20 $(TOY_TESTSET) $(TOY_KNNIMAGESOUT)
 
-TODO
+toycomputeknn: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toyknnimages
+	@echo "Computing knn on toy dataset ..."
+	@echo "  output: $(TOY_KNNOUT)"
+	@echo "  input : $(TOY_KNNIMAGESOUT)"
+	@echo "  input : $(TOY_DATASET)"
+	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) $(TOY_KNNIMAGESOUT) $(TOY_KNNOUT)
+
+# ---
+
+toymean: check $(TOY_MEANFILE) toymean_viz
+
+$(TOY_MEANFILE): $(BIN_MEAN) $(TOY_DATASET)
+	@mkdir -p $(TOY_DIR)
+	@echo "Computing mean of toy dataset ..."
+	@echo "  output: $(TOY_MEANFILE)"
+	@echo "  input : $(TOY_DATASET)"
+	@$(BIN_MEAN) --db $(TOY_DATASET) -v -o $(TOY_MEANFILE)
+
+toymean_viz: check $(TOY_MEANFILE) $(TOY_MEANIMG1) $(TOY_MEANIMG2)
+
+$(TOY_MEANIMG1) $(TOY_MEANIMG2): $(TOY_MEANFILE) $(SCRIPT_MEANVIZ)
+	@echo "Creating mean image for toy dataset ..."
+	@echo "  output: $(TOY_MEANIMG1)"
+	@echo "  output: $(TOY_MEANIMG2)"
+	@echo "  input : $(TOY_MEANFILE)"
+	@octave -q $(SCRIPT_MEANVIZ) $(TOY_MEANFILE) $(TOY_MEANIMG1) $(TOY_MEANIMG2)
+
+# ---
+
+toycov: check $(TOY_COVFILE) $(BIN_COV) $(TOY_MEANFILE) toycovviz
+
+$(TOY_COVFILE): $(BIN_COV) $(TOY_MEANFILE) $(TOY_DATASET)
+	@echo "Computing covariance matrix of toy dataset ..."
+	@echo "  output: $(TOY_COVFILE)"
+	@echo "  input : $(TOY_MEANFILE)"
+	@echo "  input : $(TOY_DATASET)"
+	@$(BIN_COV) --db $(TOY_DATASET) -v --mean $(TOY_MEANFILE) -o $(TOY_COVFILE)
+
+toycovviz: $(TOY_COVIMG)
+
+$(TOY_COVIMG): $(TOY_COVFILE) $(SCRIPT_COVVIZ)
+	@echo "Visualize covariance matrix of toy dataset ..."
+	@echo "  output: $(TOY_COVIMG)"
+	@echo "  input : $(TOY_COVFILE)"
+	@octave -q $(SCRIPT_COVVIZ) $(TOY_COVFILE) $(TOY_COVIMG)
 
 # -----------------------------------------------------------------------------
 

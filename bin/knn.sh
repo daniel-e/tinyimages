@@ -8,7 +8,6 @@ IMAGES=$4
 OUTDIR=$5
 SCOREDIR=$OUTDIR/scores/
 SMALL=$OUTDIR/small_images/
-MOSAICBIN=bin/mosaic.py
 
 mkdir -p $SCOREDIR
 mkdir -p $SMALL
@@ -49,7 +48,7 @@ done
 
 # create a summary as a pdf
 if [ $SCOREDIR/.last-update -nt $OUTDIR/summary.pdf ]; then
-	echo "Creating summary..."
+	echo "Creating summary ..."
 	# remove directory so that old images are removed
 	rm -rf $OUTDIR/summary_images/
 	mkdir -p $OUTDIR/summary_images/
@@ -57,12 +56,13 @@ if [ $SCOREDIR/.last-update -nt $OUTDIR/summary.pdf ]; then
 	for i in `ls $SCOREDIR/`; do
 		SCOREFILE=$SCOREDIR/$i
 		IMGFILE=$IMAGES/$(echo $i | sed -e s/.score//g)
-		echo $SCOREFILE $IMGFILE
+		echo $SCOREFILE
 		o=`printf "%05d" $c`
 		cat $SCOREFILE | head -n 100 | awk '{print $2}' | xargs $BINMOSAIC --db $TINYIMAGES -o $OUTDIR/summary_images/$o.result.jpg
 		cp $IMGFILE $OUTDIR/summary_images/$o.query.jpg
 		c=$((c+1))
 	done
 	convert $OUTDIR/summary_images/*.jpg $OUTDIR/summary.pdf
+	echo "done"
 fi
 

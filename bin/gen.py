@@ -5,13 +5,15 @@ import numpy as np
 
 WIDTH = 64
 HEIGHT = 64
-random.seed(1)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", type = int, required = True) # number of instances for each class
 parser.add_argument("-o", required = True) # output file
 parser.add_argument("-l", required = True) # labels
+parser.add_argument("--seed", type = int, default = 1)
 args = parser.parse_args()
+
+random.seed(args.seed)
 
 def newimg():
 	# some noise
@@ -21,7 +23,7 @@ def newimg():
 
 def color():
 	# BGR
-	c = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (255, 255, 0)]
+	c = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
 	return random.choice(c)
 
 def thick():

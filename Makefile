@@ -1,5 +1,7 @@
 TIDB=$(TINYIMAGES)
 DST=$(TINYIMAGES_OUT)
+VERBOSE=
+#VERBOSE=-v
 
 BIN_MEAN=bin/mean.py
 BIN_COV=bin/cov.py
@@ -121,7 +123,7 @@ $(TOY_MEANFILE): $(BIN_MEAN) $(TOY_DATASET)
 	@echo "Computing mean of toy dataset ..."
 	@echo "  output: $(TOY_MEANFILE)"
 	@echo "  input : $(TOY_DATASET)"
-	@$(BIN_MEAN) --db $(TOY_DATASET) -v -o $(TOY_MEANFILE)
+	@$(BIN_MEAN) --db $(TOY_DATASET) $(VERBOSE) -o $(TOY_MEANFILE)
 
 toymean_viz: check $(TOY_MEANFILE) $(TOY_MEANIMG1) $(TOY_MEANIMG2)
 
@@ -142,7 +144,7 @@ $(TOY_STDFILE): $(BIN_STD) $(TOY_DATASET) $(TOYMEANFILE)
 	@echo "  output: $(TOY_STDFILE)"
 	@echo "  input : $(TOY_DATASET)"
 	@echo "  input : $(TOY_MEANFILE)"
-	@$(BIN_STD) --db $(TOY_DATASET) -v --mean $(TOY_MEANFILE) -o $(TOY_STDFILE)
+	@$(BIN_STD) --db $(TOY_DATASET) $(VERBOSE) --mean $(TOY_MEANFILE) -o $(TOY_STDFILE)
 	
 # ---
 
@@ -154,7 +156,7 @@ $(TOY_COVFILE): $(BIN_COV) $(TOY_MEANFILE) $(TOY_STDFILE) $(TOY_DATASET)
 	@echo "  input : $(TOY_MEANFILE)"
 	@echo "  input : $(TOY_DATASET)"
 	@echo "  input : $(TOY_STDFILE)"
-	@$(BIN_COV) --db $(TOY_DATASET) -v --std $(TOY_STDFILE) --mean $(TOY_MEANFILE) -o $(TOY_COVFILE)
+	@$(BIN_COV) --db $(TOY_DATASET) $(VERBOSE) --std $(TOY_STDFILE) --mean $(TOY_MEANFILE) -o $(TOY_COVFILE)
 
 toycovviz: $(TOY_COVIMG)
 
@@ -192,7 +194,7 @@ $(MEANFILE): $(BIN_MEAN) $(TIDB)
 	@echo "Computing mean ..."
 	@echo "  output: $(MEANFILE)"
 	@echo "  input : $(TIDB)"
-	@$(BIN_MEAN) --db $(TIDB) -v -o $(MEANFILE)
+	@$(BIN_MEAN) --db $(TIDB) $(VERBOSE) -o $(MEANFILE)
 
 mean_viz: check $(MEANFILE) $(MEANIMG1) $(MEANIMG2)
 
@@ -213,7 +215,7 @@ $(STDFILE): $(BIN_STD) $(TIDB) $(MEANFILE)
 	@echo "  output: $(STDFILE)"
 	@echo "  input : $(TIDB)"
 	@echo "  input : $(MEANFILE)"
-	@$(BIN_STD) --db $(TIDB) -v --mean $(MEANFILE) -o $(STDFILE)
+	@$(BIN_STD) --db $(TIDB) $(VERBOSE) --mean $(MEANFILE) -o $(STDFILE)
 
 # -----------------------------------------------------------------------------
 
@@ -226,7 +228,7 @@ $(COVFILE): $(BIN_COV) $(MEANFILE) $(TIDB) $(STDFILE)
 	@echo "  input : $(MEANFILE)"
 	@echo "  input : $(STDFILE)"
 	@echo "  input : $(TIDB)"
-	@$(BIN_COV) --db $(TIDB) -v --std $(STDFILE) --mean $(MEANFILE) -o $(COVFILE)
+	@$(BIN_COV) --db $(TIDB) $(VERBOSE) --std $(STDFILE) --mean $(MEANFILE) -o $(COVFILE)
 
 # -----------------------------------------------------------------------------
 

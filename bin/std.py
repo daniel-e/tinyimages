@@ -17,4 +17,4 @@ for i in tdb.chunks():
 	z += np.power(np.float64(np.fromstring(i, np.uint8)) - mean, 2)
 z = np.sqrt(z / tdb.count())
 
-open(args.o, "w").write(" ".join(["%f" % (i) for i in z.flatten()]))
+open(args.o, "w").write(" ".join([repr(i) for i in z.flatten()]))

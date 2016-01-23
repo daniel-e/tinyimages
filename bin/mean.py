@@ -12,4 +12,4 @@ for i in tdb.chunks():
 	z += np.fromstring(i, np.uint8)
 z = np.float64(z) / tdb.count()
 
-open(args.o, "w").write(" ".join(["%f" % (i) for i in z.flatten()]))
+open(args.o, "w").write(" ".join([repr(i) for i in z.flatten()]))

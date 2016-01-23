@@ -22,6 +22,7 @@ MOSAICFILE=$(DST)/mosaic/mosaic.jpg
 MEANFILE=$(DST)/mean/mean.txt
 COVFILE=$(DST)/cov/cov.mat
 PCAFILE=$(DST)/pca/u.mat
+STDFILE = $(DST)/std/std.txt
 
 KNN_OUT = $(DST)/knn/
 KNN_IMAGES = data/images/
@@ -41,9 +42,11 @@ TOY_COVFILE=$(TOY_DIR)/cov.mat
 TOY_COVIMG = $(TOY_DIR)/cov.png
 TOY_STDFILE = $(TOY_DIR)/std.txt
 
+TEST_COV = tests/cov.m
+
 # -----------------------------------------------------------------------------
 
-all: check toy computeknn mosaic mean mean_viz cov pca
+all: check toy computeknn mosaic mean mean_viz std cov pca
 
 check:
 	@if [ -z $(TINYIMAGES) ]; then echo "Please set the TINYIMAGES environment variable"; exit 1; fi
@@ -52,8 +55,11 @@ check:
 clean:
 	rm -rf $(DST)
 
-test:
-	make -C tests
+test: $(TEST_COV) $(TOY_DATASET) $(TOY_COVFILE)
+	@octave -q $(TEST_COV) $(TOY_DATASET) $(TOY_COVFILE)
+
+#TODO
+#	make -C tests
 
 # -----------------------------------------------------------------------------
 # SECTION FOR TOY DATASET
@@ -135,18 +141,20 @@ $(TOY_STDFILE): $(BIN_STD) $(TOY_DATASET) $(TOYMEANFILE)
 	@echo "Computing standard deviation of toy dataset ..."
 	@echo "  output: $(TOY_STDFILE)"
 	@echo "  input : $(TOY_DATASET)"
+	@echo "  input : $(TOY_MEANFILE)"
 	@$(BIN_STD) --db $(TOY_DATASET) -v --mean $(TOY_MEANFILE) -o $(TOY_STDFILE)
 	
 # ---
 
-toycov: check $(TOY_COVFILE) $(BIN_COV) $(TOY_MEANFILE) toycovviz
+toycov: check $(TOY_COVFILE) $(BIN_COV) $(TOY_MEANFILE) $(TOY_STDFILE) toycovviz
 
-$(TOY_COVFILE): $(BIN_COV) $(TOY_MEANFILE) $(TOY_DATASET)
+$(TOY_COVFILE): $(BIN_COV) $(TOY_MEANFILE) $(TOY_STDFILE) $(TOY_DATASET)
 	@echo "Computing covariance matrix of toy dataset ..."
 	@echo "  output: $(TOY_COVFILE)"
 	@echo "  input : $(TOY_MEANFILE)"
 	@echo "  input : $(TOY_DATASET)"
-	@$(BIN_COV) --db $(TOY_DATASET) -v --mean $(TOY_MEANFILE) -o $(TOY_COVFILE)
+	@echo "  input : $(TOY_STDFILE)"
+	@$(BIN_COV) --db $(TOY_DATASET) -v --std $(TOY_STDFILE) --mean $(TOY_MEANFILE) -o $(TOY_COVFILE)
 
 toycovviz: $(TOY_COVIMG)
 
@@ -197,15 +205,28 @@ $(MEANIMG1) $(MEANIMG2): $(MEANFILE) $(SCRIPT_MEANVIZ)
 
 # -----------------------------------------------------------------------------
 
+std: check $(STDFILE) $(MEANFILE)
+
+$(STDFILE): $(BIN_STD) $(TIDB) $(MEANFILE)
+	@mkdir -p $(DST)/std
+	@echo "Computing standard deviation ..."
+	@echo "  output: $(STDFILE)"
+	@echo "  input : $(TIDB)"
+	@echo "  input : $(MEANFILE)"
+	@$(BIN_STD) --db $(TIDB) -v --mean $(MEANFILE) -o $(STDFILE)
+
+# -----------------------------------------------------------------------------
+
 cov: check $(COVFILE)
 
-$(COVFILE): $(BIN_COV) $(MEANFILE) $(TIDB)
+$(COVFILE): $(BIN_COV) $(MEANFILE) $(TIDB) $(STDFILE)
 	@mkdir -p $(DST)/cov
 	@echo "Computing covariance matrix ..."
 	@echo "  output: $(COVFILE)"
 	@echo "  input : $(MEANFILE)"
+	@echo "  input : $(STDFILE)"
 	@echo "  input : $(TIDB)"
-	@$(BIN_COV) --db $(TIDB) -v --mean $(MEANFILE) -o $(COVFILE)
+	@$(BIN_COV) --db $(TIDB) -v --std $(STDFILE) --mean $(MEANFILE) -o $(COVFILE)
 
 # -----------------------------------------------------------------------------
 

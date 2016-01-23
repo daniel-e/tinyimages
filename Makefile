@@ -7,6 +7,7 @@ BIN_MOSAIC=bin/mosaic.py
 BIN_TOY = bin/gen.py
 BIN_DB2IMG = bin/db2img.py
 BIN_KNN = bin/knn.py
+BIN_STD = bin/std.py
 SH_KNN = bin/knn.sh
 SH_GENKNNIMAGES = bin/genknnimages.sh
 
@@ -38,6 +39,7 @@ TOY_MEANIMG1=$(TOY_DIR)/mean.png
 TOY_MEANIMG2=$(TOY_DIR)/mean_stretched.png
 TOY_COVFILE=$(TOY_DIR)/cov.mat
 TOY_COVIMG = $(TOY_DIR)/cov.png
+TOY_STDFILE = $(TOY_DIR)/std.txt
 
 # -----------------------------------------------------------------------------
 
@@ -57,9 +59,7 @@ test:
 # SECTION FOR TOY DATASET
 # -----------------------------------------------------------------------------
 
-toy: check toydataset toymosaic toyknn toymean toycov
-
-# TODO: cov, pca, knn on reduced data
+toy: check toydataset toymosaic toyknn toymean toystd toycov
 
 toydataset: $(TOY_DATASET) $(TOY_TESTSET)
 
@@ -126,6 +126,17 @@ $(TOY_MEANIMG1) $(TOY_MEANIMG2): $(TOY_MEANFILE) $(SCRIPT_MEANVIZ)
 	@echo "  input : $(TOY_MEANFILE)"
 	@octave -q $(SCRIPT_MEANVIZ) $(TOY_MEANFILE) $(TOY_MEANIMG1) $(TOY_MEANIMG2)
 
+# ---
+
+toystd: check $(TOY_STDFILE) $(TOY_MEANFILE)
+
+$(TOY_STDFILE): $(BIN_STD) $(TOY_DATASET) $(TOYMEANFILE)
+	@mkdir -p $(TOY_DIR)
+	@echo "Computing standard deviation of toy dataset ..."
+	@echo "  output: $(TOY_STDFILE)"
+	@echo "  input : $(TOY_DATASET)"
+	@$(BIN_STD) --db $(TOY_DATASET) -v --mean $(TOY_MEANFILE) -o $(TOY_STDFILE)
+	
 # ---
 
 toycov: check $(TOY_COVFILE) $(BIN_COV) $(TOY_MEANFILE) toycovviz

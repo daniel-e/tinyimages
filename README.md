@@ -1,17 +1,7 @@
-TODO:
-- tests
-- cov
-- knn
-
-1) compute mean 
-   (make mean)
-
-2) compute covariance matrix 
-   (make cov)
-
-3) compute pca 
-   (make pca)
-
-4) reduce tiny images dataset to the first 19 principal components
-   (make applypca)
-
+# TODO
+* standard deviation (toy, tinydb, viz, test)
+* compute covariance matrix on the mean/std normalized dataset
+* compute pca on the covariance matrix
+* plot S (from svd)
+* compute nearest neighbours on reduced data
+* sobl

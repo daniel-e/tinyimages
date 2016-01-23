@@ -14,6 +14,7 @@ DIM = WIDTH * HEIGHT * CHANNELS
 
 tdb = TinyDB(dimensions = DIM, parse_args = None)
 tdb.arg_parser().add_argument("--mean", required = True)
+tdb.arg_parser().add_argument("--std", required = True)
 tdb.arg_parser().add_argument("--rows", type = int, default = 20000)
 tdb.arg_parser().add_argument("-o", required = True)
 args = tdb.parse_args()
@@ -22,9 +23,14 @@ args = tdb.parse_args()
 mean = np.array([float(i) for i in open(args.mean).readline().strip().split(" ")], np.float64)
 assert(len(mean) == DIM)
 
+# read the standard deviation for each dimension
+std = np.array([float(i) for i in open(args.std).readline().strip().split(" ")], np.float64)
+assert(len(std) == DIM)
+
 
 def compute(m):
 	k = np.matrix([np.fromstring(i, np.uint8) for i in m]) - mean
+	k = k / std
 	return k.transpose() * k
 
 jobs = process(tdb.groups(args.rows), compute)

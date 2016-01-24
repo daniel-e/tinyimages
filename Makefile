@@ -25,6 +25,8 @@ MEANFILE=$(DST)/mean/mean.txt
 COVFILE=$(DST)/cov/cov.mat
 PCAFILE=$(DST)/pca/u.mat
 STDFILE = $(DST)/std/std.txt
+STDIMG1 = $(DST)/std/std.png
+STDIMG2 = $(DST)/std/std_stretched.png
 
 KNN_OUT = $(DST)/knn/
 KNN_IMAGES = data/images/
@@ -50,7 +52,7 @@ TEST_COV = tests/cov.m
 
 # -----------------------------------------------------------------------------
 
-all: check toy computeknn mosaic mean mean_viz std cov pca
+all: check toy computeknn mosaic mean mean_viz std std_viz cov pca
 
 check:
 	@if [ -z $(TINYIMAGES) ]; then echo "Please set the TINYIMAGES environment variable"; exit 1; fi
@@ -227,6 +229,15 @@ $(STDFILE): $(BIN_STD) $(TIDB) $(MEANFILE)
 	@echo "  input : $(TIDB)"
 	@echo "  input : $(MEANFILE)"
 	@$(BIN_STD) --db $(TIDB) $(VERBOSE) --mean $(MEANFILE) -o $(STDFILE)
+
+std_viz: check $(STDFILE) $(STDIMG1) $(STDIMG2)
+
+$(STDIMG1) $(STDIMG2): $(STDFILE) $(SCRIPT_MEANVIZ)
+	@echo "Creating standard deviation image ..."
+	@echo "  output: $(STDIMG1)"
+	@echo "  output: $(STDIMG2)"
+	@echo "  input : $(STDFILE)"
+	@octave -q $(SCRIPT_MEANVIZ) $(STDFILE) $(STDIMG1) $(STDIMG2)
 
 # -----------------------------------------------------------------------------
 

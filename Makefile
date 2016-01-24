@@ -43,6 +43,8 @@ TOY_MEANIMG2=$(TOY_DIR)/mean_stretched.png
 TOY_COVFILE=$(TOY_DIR)/cov.mat
 TOY_COVIMG = $(TOY_DIR)/cov.png
 TOY_STDFILE = $(TOY_DIR)/std.txt
+TOY_STDIMG1 = $(TOY_DIR)/std.png
+TOY_STDIMG2 = $(TOY_DIR)/std_stretched.png
 
 TEST_COV = tests/cov.m
 
@@ -136,7 +138,7 @@ $(TOY_MEANIMG1) $(TOY_MEANIMG2): $(TOY_MEANFILE) $(SCRIPT_MEANVIZ)
 
 # ---
 
-toystd: check $(TOY_STDFILE) $(TOY_MEANFILE)
+toystd: check $(TOY_STDFILE) $(TOY_MEANFILE) toystd_viz
 
 $(TOY_STDFILE): $(BIN_STD) $(TOY_DATASET) $(TOYMEANFILE)
 	@mkdir -p $(TOY_DIR)
@@ -146,6 +148,15 @@ $(TOY_STDFILE): $(BIN_STD) $(TOY_DATASET) $(TOYMEANFILE)
 	@echo "  input : $(TOY_MEANFILE)"
 	@$(BIN_STD) --db $(TOY_DATASET) $(VERBOSE) --mean $(TOY_MEANFILE) -o $(TOY_STDFILE)
 	
+toystd_viz: check $(TOY_STDFILE) $(TOY_STDIMG1) $(TOY_STDIMG2)
+
+$(TOY_STDIMG1) $(TOY_STDIMG2): $(TOY_STDFILE) $(SCRIPT_MEANVIZ)
+	@echo "Creating std image for toy dataset ..."
+	@echo "  output: $(TOY_STDIMG1)"
+	@echo "  output: $(TOY_STDIMG2)"
+	@echo "  input : $(TOY_STDFILE)"
+	@octave -q $(SCRIPT_MEANVIZ) $(TOY_STDFILE) $(TOY_STDIMG1) $(TOY_STDIMG2)
+
 # ---
 
 toycov: check $(TOY_COVFILE) $(BIN_COV) $(TOY_MEANFILE) $(TOY_STDFILE) toycovviz

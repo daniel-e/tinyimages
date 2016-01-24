@@ -1,7 +1,17 @@
+# -------------------------------------
+# configuration
+# -------------------------------------
+
 TIDB=$(TINYIMAGES)
 DST=$(TINYIMAGES_OUT)
 VERBOSE=
 #VERBOSE=-v
+
+KNN_IMAGES = data/images/
+
+# -------------------------------------
+# executables and scripts
+# -------------------------------------
 
 BIN_MEAN=bin/mean.py
 BIN_COV=bin/cov.py
@@ -11,25 +21,30 @@ BIN_DB2IMG = bin/db2img.py
 BIN_KNN = bin/knn.py
 BIN_STD = bin/std.py
 SH_KNN = bin/knn.sh
-SH_GENKNNIMAGES = bin/genknnimages.sh
+SH_TOYKNNIMAGES = bin/genknnimages.sh
 
 SCRIPT_PCA=octave/pca.m
 SCRIPT_MEANVIZ=octave/meanviz.m
 SCRIPT_COVVIZ = octave/covviz.m
 
-MEANIMG1=$(DST)/mean/mean.png
-MEANIMG2=$(DST)/mean/mean_stretched.png
+# -------------------------------------
+# generated files
+# -------------------------------------
 
 MOSAICFILE=$(DST)/mosaic/mosaic.jpg
 MEANFILE=$(DST)/mean/mean.txt
 COVFILE=$(DST)/cov/cov.mat
 PCAFILE=$(DST)/pca/u.mat
+MEANIMG1=$(DST)/mean/mean.png
+MEANIMG2=$(DST)/mean/mean_stretched.png
 STDFILE = $(DST)/std/std.txt
 STDIMG1 = $(DST)/std/std.png
 STDIMG2 = $(DST)/std/std_stretched.png
-
 KNN_OUT = $(DST)/knn/
-KNN_IMAGES = data/images/
+
+# -------------------------------------
+# toy dataset
+# -------------------------------------
 
 TOY_DIR = $(DST)/toy
 TOY_DATASET = $(TOY_DIR)/imagedb.bin
@@ -47,6 +62,8 @@ TOY_COVIMG = $(TOY_DIR)/cov.png
 TOY_STDFILE = $(TOY_DIR)/std.txt
 TOY_STDIMG1 = $(TOY_DIR)/std.png
 TOY_STDIMG2 = $(TOY_DIR)/std_stretched.png
+
+# -------------------------------------
 
 TEST_COV = tests/cov.m
 
@@ -105,11 +122,11 @@ $(TOY_MOSAICFILE): $(TOY_DATASET)
 
 toyknn: toyknnimages toycomputeknn
 
-toyknnimages: check $(SH_GENKNNIMAGES) $(TOY_TESTSET)
+toyknnimages: check $(SH_TOYKNNIMAGES) $(TOY_TESTSET)
 	@echo "Creating images for knn on toy dataset ..."
 	@echo "  output: $(TOY_KNNIMAGESOUT)"
 	@echo "  input : $(TOY_TESTSET)"
-	@$(SH_GENKNNIMAGES) $(BIN_DB2IMG) 20 $(TOY_TESTSET) $(TOY_KNNIMAGESOUT)
+	@$(SH_TOYKNNIMAGES) $(BIN_DB2IMG) 20 $(TOY_TESTSET) $(TOY_KNNIMAGESOUT)
 
 toycomputeknn: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toyknnimages
 	@echo "Computing knn on toy dataset ..."

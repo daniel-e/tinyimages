@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from tinydb import TinyDB
-from imageprocessing import sobel, read_rgb_image, flatten_rgb_image
+from imageprocessing import sobel, read_rgb_image, flatten_rgb_image, unflatten_rgb_image
 from parallel import process
 
 import cv2, sys
@@ -21,12 +21,12 @@ qi = flatten_rgb_image(read_rgb_image(args.image))
 def do_filter(arr, filt):
 	if filt == None:
 		return np.int32(arr)
-	return np.uint32(flatten_rgb_image(sobel(unflatten_rgb_image(arr))))
+	return np.uint32(flatten_rgb_image(gray_as_rgb(sobel_scipy(unflatten_rgb_image(arr, d, d)))))
 
 if args.filter == None:
 	qi = do_filter(qi, None)
 elif args.filter == 'raw,sobel':
-	qi = do_filter(qi, sobel)
+	qi = gray_as_rgb(do_filter(qi, sobel))
 else:
 	print >> sys.stderr, "unknown filter"
 	sys.exit(1)

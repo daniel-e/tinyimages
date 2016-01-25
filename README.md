@@ -6,7 +6,7 @@
     - no dimension reduciton is done
     - the Euclidean distance is computed on the raw pixel data
   - [ ] after applying the Sobel operator to the raw pixel data
-  - [ ] after applying dimension reduction
+  - [ ] after applying dimension reduction via PCA
     - [ ] on raw pixel data
     - [ ] after applying the Sobel operator to the raw pixel data
 

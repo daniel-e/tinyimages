@@ -1,11 +1,23 @@
 import math, cv2, unittest, os
 import numpy as np
 
+from scipy import ndimage
+
 sx = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
 sy = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
 
 def fold(a, b):
 	return sum([i * j for i, j in zip(iter(a.flatten()), iter(b.flatten()))])
+
+def sobel_scipy(img):
+	h = img.shape[0]
+	w = img.shape[1]
+	c = 0.21 * img[:, :, 0] + 0.72 * img[:, :, 1] + 0.07 * img[:, :, 2]
+	dx = ndimage.sobel(c, 1)
+	dy = ndimage.sobel(c, 0)
+	m = np.hypot(dx, dy)
+	m *= 255.0 / m.max()
+	return np.uint8(m)
 
 def sobel(img):
 	h = img.shape[0]

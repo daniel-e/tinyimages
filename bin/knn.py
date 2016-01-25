@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from tinydb import TinyDB
-from imageprocessing import sobel
+from imageprocessing import sobel, read_rgb_image, flatten_rgb_image
 from parallel import process
 
 import cv2, sys
@@ -14,25 +14,14 @@ args = db.parse_args()
 
 d = 32
 
-i = np.uint8(np.reshape(cv2.imread(args.image), (d, d, 3), order = 'F'))
-b = list(i[:, :, 0].flatten(order = 'F'))
-g = list(i[:, :, 1].flatten(order = 'F'))
-r = list(i[:, :, 2].flatten(order = 'F'))
-qi = np.reshape(r + g + b, (1, d * d * 3), order = 'F')
+qi = flatten_rgb_image(read_rgb_image(args.image))
 
 # ---------- filter -----------
 
-# img is a flat array: [r, r, r, ..., g, g, g, ..., b, b, b, ...]
-def do_filter(img, filt):
+def do_filter(arr, filt):
 	if filt == None:
-		return np.int32(img)
-	i = np.reshape(img, (d, d, 3), order = 'F')
-	r = i[:, :, 0]
-	g = i[:, :, 1]
-	b = i[:, :, 2]
-	f = sobel(r, g, b)
-	print f
-	return np.int32(sobel(r, g, b).flatten(order = 'F'))
+		return np.int32(arr)
+	return np.uint32(flatten_rgb_image(sobel(unflatten_rgb_image(arr))))
 
 if args.filter == None:
 	qi = do_filter(qi, None)

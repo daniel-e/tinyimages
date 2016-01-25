@@ -23,3 +23,5 @@
     - [x] implement the Sobel operator
     - [ ] include the Sobel operator as a filter in the knn search
 
+# Subtasks
+

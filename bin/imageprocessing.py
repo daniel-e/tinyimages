@@ -7,18 +7,28 @@ sy = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
 def fold(a, b):
 	return sum([i * j for i, j in zip(iter(a.flatten()), iter(b.flatten()))])
 
-def sobel(r, g, b):
-	w = r.shape[1]
-	h = r.shape[0]
-	c = 0.21 * r + 0.72 * g + 0.07 * b
+def sobel(img):
+	h = img.shape[0]
+	w = img.shape[1]
+	c = 0.21 * img[:, :, 0] + 0.72 * img[:, :, 1] + 0.07 * img[:, :, 2]
 	d = np.zeros((h, w), np.float64)
 	for y in range(1, h - 1):
 		for x in range(1, w - 1):
 			rx = fold(sx, c[y-1:y+2, x-1:x+2])
 			ry = fold(sy, c[y-1:y+2, x-1:x+2])
 			d[y, x] = int(math.sqrt(rx * rx + ry * ry))
-	return d
+	return np.uint8(d / d.max() * 255)
 
+def gray_as_rgb(img):
+	assert(img.dtype == 'uint8')
+	h = img.shape[0]
+	w = img.shape[1]
+	r = np.zeros((h, w, 3), np.uint8)
+	r[:, :, 0] = img.copy()
+	r[:, :, 1] = img.copy()
+	r[:, :, 2] = img.copy()
+	return r
+	
 # -----------------------------------------------------------------------------
 
 def read_rgb_image(filename):

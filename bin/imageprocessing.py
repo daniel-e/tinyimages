@@ -19,6 +19,8 @@ def sobel(r, g, b):
 			d[y, x] = int(math.sqrt(rx * rx + ry * ry))
 	return d
 
+# -----------------------------------------------------------------------------
+
 def read_rgb_image(filename):
 	img = cv2.imread(filename)
 	assert(img.dtype == 'uint8')

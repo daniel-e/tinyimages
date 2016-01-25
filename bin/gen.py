@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from imageprocessing import flatten_rgb_image
+
 import cv2, random, argparse, sys
 import numpy as np
 
@@ -18,8 +20,7 @@ random.seed(args.seed)
 def newimg():
 	# some noise
 	c = [random.randint(150, 255) for i in range(WIDTH * HEIGHT * 3)]
-	r = np.reshape(np.array(c, np.uint8), (HEIGHT, WIDTH, 3), np.uint8).copy()
-	return r
+	return np.reshape(np.array(c, np.uint8), (HEIGHT, WIDTH, 3), np.uint8).copy()
 
 def color():
 	# BGR
@@ -59,16 +60,16 @@ f = open(args.o, "w")
 fl = open(args.l, "w")
 for i in xrange(args.n):
 	for l, fcn in enumerate(functions):
-		img = newimg()
-		img = fcn(img)
-		img = cv2.resize(img, (32, 32))
-		b = img[:, :, 0]
-		g = img[:, :, 1]
-		r = img[:, :, 2]
-		img[:, :, 0], img[:, :, 2] = r.copy(), b.copy()
-		data = [chr(j) for j in np.reshape(img, (1, 32 * 32 * 3), order = 'F').flatten()]
-		f.write("".join(data))
+		img = cv2.resize(fcn(newimg()), (32, 32))
+		d = "".join([chr(j) for j in flatten_rgb_image(img)])
+		
+#		b = img[:, :, 0]
+#		g = img[:, :, 1]
+#		r = img[:, :, 2]
+#		img[:, :, 0], img[:, :, 2] = r.copy(), b.copy()
+#		data = [chr(j) for j in np.reshape(img, (1, 32 * 32 * 3), order = 'F').flatten()]
+		f.write(d)
 		print >> fl, l
-		#cv2.imshow('test', img)
-		#cv2.waitKey()
+		cv2.imshow('test', img)
+		cv2.waitKey()
 

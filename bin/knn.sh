@@ -6,6 +6,7 @@ BINMOSAIC=$2
 TINYIMAGES=$3
 IMAGES=$4
 OUTDIR=$5
+FILTER=$6
 SCOREDIR=$OUTDIR/scores/
 SMALL=$OUTDIR/small_images/
 
@@ -18,6 +19,7 @@ export TINYIMAGES
 export SCOREDIR
 export IMAGES
 export SMALL
+export FILTER
 
 function computeknn {
 	IMG=$1
@@ -25,9 +27,14 @@ function computeknn {
 	SMALLIMG=$SMALL/$IMG
 	
 	if [ $BIGIMG -nt $SMALLIMG ] || [ $BINKNN -nt $SMALLIMG ] || [ $SCRIPTNAME -nt $SMALLIMG ]; then
-		echo $SMALLIMG
 		convert -resize '32x32!' $BIGIMG $SMALLIMG
-		$BINKNN --db $TINYIMAGES -v --image $SMALLIMG | sort -g -S 1G | head -n 10000 > $SCOREDIR/$IMG.score
+		filter=""
+		if [ ! -z $FILTER ]; then
+			filter="--filter raw,sobel"
+		fi
+		echo $SMALLIMG $arg
+		#echo $BINKNN --db $TINYIMAGES -v $filter --image $SMALLIMG
+		$BINKNN --db $TINYIMAGES -v $filter --image $SMALLIMG | sort -g -S 1G | head -n 10000 > $SCOREDIR/$IMG.score
 		touch $SCOREDIR/.last-update
 	fi
 }

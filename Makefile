@@ -53,7 +53,8 @@ TOY_LABELS = $(TOY_DIR)/labels.txt
 TOY_TESTLABELS = $(TOY_DIR)/testlabels.txt
 TOY_MOSAICFILE = $(TOY_DIR)/mosaic.jpg
 TOY_KNNIMAGESOUT = $(TOY_DIR)/images/
-TOY_KNNOUT = $(TOY_DIR)/knn
+TOY_KNNOUT_RAW = $(TOY_DIR)/knn/raw
+TOY_KNNOUT_RAWSOBEL = $(TOY_DIR)/knn/raw_sobel
 TOY_MEANFILE=$(TOY_DIR)/mean.txt
 TOY_MEANIMG1=$(TOY_DIR)/mean.png
 TOY_MEANIMG2=$(TOY_DIR)/mean_stretched.png
@@ -120,7 +121,7 @@ $(TOY_MOSAICFILE): $(TOY_DATASET)
 
 # ---
 
-toyknn: toyknnimages toycomputeknn
+toyknn: toyknnimages toycomputeknn.raw toycomputeknn.rawsobel
 
 toyknnimages: check $(SH_TOYKNNIMAGES) $(TOY_TESTSET)
 	@echo "Creating images for knn on toy dataset ..."
@@ -128,12 +129,19 @@ toyknnimages: check $(SH_TOYKNNIMAGES) $(TOY_TESTSET)
 	@echo "  input : $(TOY_TESTSET)"
 	@$(SH_TOYKNNIMAGES) $(BIN_DB2IMG) 20 $(TOY_TESTSET) $(TOY_KNNIMAGESOUT)
 
-toycomputeknn: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toyknnimages
+toycomputeknn.raw: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toyknnimages
 	@echo "Computing knn on toy dataset ..."
-	@echo "  output: $(TOY_KNNOUT)"
+	@echo "  output: $(TOY_KNNOUT_RAW)"
 	@echo "  input : $(TOY_KNNIMAGESOUT)"
 	@echo "  input : $(TOY_DATASET)"
-	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) $(TOY_KNNIMAGESOUT) $(TOY_KNNOUT)
+	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) $(TOY_KNNIMAGESOUT) $(TOY_KNNOUT_RAW)
+
+toycomputeknn.rawsobel: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toyknnimages
+	@echo "Computing knn on toy dataset ..."
+	@echo "  output: $(TOY_KNNOUT_RAWSOBEL)"
+	@echo "  input : $(TOY_KNNIMAGESOUT)"
+	@echo "  input : $(TOY_DATASET)"
+	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) $(TOY_KNNIMAGESOUT) $(TOY_KNNOUT_RAWSOBEL) raw,sobel
 
 # ---
 

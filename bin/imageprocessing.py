@@ -45,14 +45,13 @@ def write_rgb_image(filename, img):
 def flatten_rgb_image(img):
 	assert(img.dtype == 'uint8')
 	assert(img.shape[2] == 3)  # color channels
-	# order = 'C' seems to be the default for appending
-	return np.append(np.append(img[:, :, 0].flatten(), img[:, :, 1]), img[:, :, 2])
+	return np.append(np.append(img[:, :, 0].flatten(order = 'F'), img[:, :, 1].flatten(order = 'F')), img[:, :, 2].flatten(order = 'F'))
 
 def unflatten_rgb_image(arr, w, h):
 	assert(arr.dtype == 'uint8')
-	r = np.reshape(arr[:w * h], (h, w), order = 'C')
-	g = np.reshape(arr[w * h:2 * w * h], (h, w), order = 'C')
-	b = np.reshape(arr[2 * w * h:], (h, w), order = 'C')
+	r = np.reshape(arr[:w * h], (h, w), order = 'F')
+	g = np.reshape(arr[w * h:2 * w * h], (h, w), order = 'F')
+	b = np.reshape(arr[2 * w * h:], (h, w), order = 'F')
 	z = np.zeros((h, w, 3), np.uint8)
 	z[:, :, 0] = r
 	z[:, :, 1] = g
@@ -99,23 +98,43 @@ class TestImageProcessing(unittest.TestCase):
 		self.assertEqual(f.shape, (64 * 32 * 3,))  # h = 64, w = 32
 
 		self.assertEqual(f[0], 255) # red component of pixel (x = 0, y = 0)
-		self.assertEqual(f[1], 255) # red component of pixel (1,0)
-		self.assertEqual(f[31], 255) # red component of pixel (31, 0)
-		self.assertEqual(f[32], 0) # red component of pixel (0, 1)
+		self.assertEqual(f[0 + 1 * 64], 255) # red component of pixel (1,0)
+		self.assertEqual(f[0 + 31 * 64], 255) # red component of pixel (31, 0)
+		self.assertEqual(f[0 + 1], 0) # red component of pixel (0, 1)
 
 		self.assertEqual(f[2048], 0) # green component of pixel (0, 0)
-		self.assertEqual(f[2048 + 31], 0) # green component of pixel (31, 0)
-		self.assertEqual(f[2048 + 32], 255) # green component of pixel (1, 0)
+		self.assertEqual(f[2048 + 63 * 64], 0) # green component of pixel (63, 0)
+		self.assertEqual(f[2048 + 1 * 64], 0) # green component of pixel (1, 0)
+		self.assertEqual(f[2048 + 1 * 64 + 1], 255) # green component of pixel (1, 1)
 
 		self.assertEqual(f[4096], 0) # blue component of pixel (0, 0)
-		self.assertEqual(f[4096 + 32], 0) # blue component of pixel (1, 0)
-		self.assertEqual(f[4096 + 64], 255) # blue component of pixel (2, 0)
+		self.assertEqual(f[4096 + 64], 0) # blue component of pixel (1, 0)
+		self.assertEqual(f[4096 + 2 * 64], 0) # blue component of pixel (2, 0)
+		self.assertEqual(f[4096 + 2 * 64 + 2], 255) # blue component of pixel (2, 2)
 
 	def test_unflatten_rgb_image(self):
 		img = self.gen_test_img()
 		f = flatten_rgb_image(img).copy()
 		i = unflatten_rgb_image(f, 32, 64)
 		self.assertTrue(np.equal(img, i).all())
+
+	def test_flatten_rgb_image2(self):
+		r = np.array([[1, 2], [3, 4]], np.uint8)
+		g = np.array([[5, 6], [7, 8]], np.uint8)
+		b = np.array([[9, 10], [11, 12]], np.uint8)
+		z = np.zeros((2, 2, 3), np.uint8)
+		z[:, :, 0] = r
+		z[:, :, 1] = g
+		z[:, :, 2] = b
+		f = flatten_rgb_image(z)
+		self.assertTrue(np.equal(f, [1,3,2,4,5,7,6,8,9,11,10,12]).all())
+
+	def test_unflatten_rgb_image2(self):
+		d = np.array([1,3,2,4,5,7,6,8,9,11,10,12], np.uint8)
+		i = unflatten_rgb_image(d, 2, 2)
+		self.assertTrue(np.equal(i[:, :, 0], np.array([[1, 2], [3, 4]])).all())
+		self.assertTrue(np.equal(i[:, :, 1], np.array([[5, 6], [7, 8]])).all())
+		self.assertTrue(np.equal(i[:, :, 2], np.array([[9, 10], [11, 12]])).all())
 
 if __name__ == '__main__':
 	unittest.main()

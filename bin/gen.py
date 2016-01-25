@@ -55,21 +55,15 @@ def triangle(img):
 	cv2.line(img, (WIDTH - 6, HEIGHT - 6), (WIDTH / 2, 6), c, t)
 	return img
 
-functions = [circle, line1, line2, rect, triangle]
+functions = [triangle, line1, line2, rect, circle]
 f = open(args.o, "w")
 fl = open(args.l, "w")
 for i in xrange(args.n):
 	for l, fcn in enumerate(functions):
 		img = cv2.resize(fcn(newimg()), (32, 32))
 		d = "".join([chr(j) for j in flatten_rgb_image(img)])
-		
-#		b = img[:, :, 0]
-#		g = img[:, :, 1]
-#		r = img[:, :, 2]
-#		img[:, :, 0], img[:, :, 2] = r.copy(), b.copy()
-#		data = [chr(j) for j in np.reshape(img, (1, 32 * 32 * 3), order = 'F').flatten()]
 		f.write(d)
 		print >> fl, l
-		cv2.imshow('test', img)
-		cv2.waitKey()
+		#cv2.imshow('test', img)
+		#cv2.waitKey()
 

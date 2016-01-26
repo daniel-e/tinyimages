@@ -40,7 +40,7 @@ class TinyDB:
 			if len(data) != self.dim():
 				break
 			self.cnt += 1
-			if self.verbose and self.cnt % 10000 == 0:
+			if self.verbose and self.cnt % 100000 == 0:
 				self.status_msg(self.cnt, self.f.tell(), os.path.getsize(self.dbname))
 			yield data
 			if self.n > -1 and self.cnt >= self.n:

@@ -1,4 +1,4 @@
-import math, cv2, unittest, os
+import math, cv2, unittest, os, sys
 import numpy as np
 
 from scipy import ndimage
@@ -6,23 +6,35 @@ from scipy import ndimage
 sx = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
 sy = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
 
-def fold(a, b):
-	return sum([i * j for i, j in zip(iter(a.flatten()), iter(b.flatten()))])
+def sobel(img):
+	return sobel_scipy(img)
 
 def sobel_scipy(img):
-	h = img.shape[0]
-	w = img.shape[1]
-	c = 0.21 * img[:, :, 0] + 0.72 * img[:, :, 1] + 0.07 * img[:, :, 2]
+	assert(img.dtype == 'uint8')
+	assert(img.shape[2] == 3)
+
+	if img.max() == 0:
+		return np.zeros((img.shape[0], img.shape[1]), np.uint8)
+
+	c = np.float64(rgb_as_gray(img)) # must be float64
 	dx = ndimage.sobel(c, 1)
 	dy = ndimage.sobel(c, 0)
 	m = np.hypot(dx, dy)
-	m *= 255.0 / m.max()
+
+	d = m.max()
+	if d == 0: d = 1.0
+
+	m /= d
+	m *= 255.0
 	return np.uint8(m)
 
-def sobel(img):
+def fold(a, b):
+	return sum([i * j for i, j in zip(iter(a.flatten()), iter(b.flatten()))])
+
+def sobel_local(img):
 	h = img.shape[0]
 	w = img.shape[1]
-	c = 0.21 * img[:, :, 0] + 0.72 * img[:, :, 1] + 0.07 * img[:, :, 2]
+	c = rgb_as_gray(img)
 	d = np.zeros((h, w), np.float64)
 	for y in range(1, h - 1):
 		for x in range(1, w - 1):
@@ -30,6 +42,11 @@ def sobel(img):
 			ry = fold(sy, c[y-1:y+2, x-1:x+2])
 			d[y, x] = int(math.sqrt(rx * rx + ry * ry))
 	return np.uint8(d / d.max() * 255)
+
+def rgb_as_gray(img):
+	return np.uint8(0.21 * img[:, :, 0] + 0.72 * img[:, :, 1] + 0.07 * img[:, :, 2])
+	# the following line...
+	#return np.uint8(0.33 * img[:, :, 0] + 0.33 * img[:, :, 1] + 0.33 * img[:, :, 2])
 
 def gray_as_rgb(img):
 	assert(img.dtype == 'uint8')

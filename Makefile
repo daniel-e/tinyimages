@@ -40,7 +40,8 @@ MEANIMG2=$(DST)/mean/mean_stretched.png
 STDFILE = $(DST)/std/std.txt
 STDIMG1 = $(DST)/std/std.png
 STDIMG2 = $(DST)/std/std_stretched.png
-KNN_OUT = $(DST)/knn/
+KNN_OUT_RAW = $(DST)/knn/raw
+KNN_OUT_RAWSOBEL = $(DST)/knn/raw_sobel
 
 # -------------------------------------
 # toy dataset
@@ -121,7 +122,7 @@ $(TOY_MOSAICFILE): $(TOY_DATASET)
 
 # ---
 
-toyknn: toyknnimages toycomputeknn.raw toycomputeknn.rawsobel
+toyknn: toyknnimages toycomputeknn.rawsobel toycomputeknn.raw
 
 toyknnimages: check $(SH_TOYKNNIMAGES) $(TOY_TESTSET)
 	@echo "Creating images for knn on toy dataset ..."
@@ -137,7 +138,7 @@ toycomputeknn.raw: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toykn
 	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) $(TOY_KNNIMAGESOUT) $(TOY_KNNOUT_RAW)
 
 toycomputeknn.rawsobel: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TOY_DATASET) toyknnimages
-	@echo "Computing knn on toy dataset ..."
+	@echo "Computing knn (sobel on raw) on toy dataset ..."
 	@echo "  output: $(TOY_KNNOUT_RAWSOBEL)"
 	@echo "  input : $(TOY_KNNIMAGESOUT)"
 	@echo "  input : $(TOY_DATASET)"
@@ -206,11 +207,20 @@ $(TOY_COVIMG): $(TOY_COVFILE) $(SCRIPT_COVVIZ)
 
 # -----------------------------------------------------------------------------
 
-computeknn: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TIDB)
-	@echo "Computing knn ..."
-	@echo "  output: $(KNN_OUT)"
+computeknn: computeknn.rawsobel computeknn.raw
+
+computeknn.raw: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TIDB)
+	@echo "Computing knn on tiny images dataset ..."
+	@echo "  output: $(KNN_OUT_RAW)"
 	@echo "  input : $(KNN_IMAGES)"
-	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TIDB) $(KNN_IMAGES) $(KNN_OUT)
+	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TIDB) $(KNN_IMAGES) $(KNN_OUT_RAW)
+
+computeknn.rawsobel: check $(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TIDB)
+	@echo "Computing knn (sobel on raw) on tiny images dataset ..."
+	@echo "  output: $(KNN_OUT_RAWSOBEL)"
+	@echo "  input : $(KNN_IMAGES)"
+	@$(SH_KNN) $(BIN_KNN) $(BIN_MOSAIC) $(TIDB) $(KNN_IMAGES) $(KNN_OUT_RAWSOBEL) raw,sobel
+
 
 # -----------------------------------------------------------------------------
 

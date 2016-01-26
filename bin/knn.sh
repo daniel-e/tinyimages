@@ -25,7 +25,8 @@ function computeknn {
 	IMG=$1
 	BIGIMG=$IMAGES/$IMG
 	SMALLIMG=$SMALL/$IMG
-	
+	FILTERED=$SMALL/filtered.$IMG.png
+
 	if [ $BIGIMG -nt $SMALLIMG ] || [ $BINKNN -nt $SMALLIMG ] || [ $SCRIPTNAME -nt $SMALLIMG ]; then
 		convert -resize '32x32!' $BIGIMG $SMALLIMG
 		filter=""
@@ -34,7 +35,7 @@ function computeknn {
 		fi
 		echo $SMALLIMG $arg
 		#echo $BINKNN --db $TINYIMAGES -v $filter --image $SMALLIMG
-		$BINKNN --db $TINYIMAGES -v $filter --image $SMALLIMG | sort -g -S 1G | head -n 10000 > $SCOREDIR/$IMG.score
+		$BINKNN --db $TINYIMAGES -v $filter --image $SMALLIMG --filterout $FILTERED | sort -g -S 1G | head -n 10000 > $SCOREDIR/$IMG.score
 		touch $SCOREDIR/.last-update
 	fi
 }
@@ -63,13 +64,22 @@ if [ $SCOREDIR/.last-update -nt $OUTDIR/summary.pdf ]; then
 	for i in `ls $SCOREDIR/`; do
 		SCOREFILE=$SCOREDIR/$i
 		IMGFILE=$IMAGES/$(echo $i | sed -e s/.score//g)
+		FILTEREDFILE=$OUTDIR/small_images/filtered.$(echo $i | sed -e s/.score//g).png
+
 		echo $SCOREFILE
 		o=`printf "%05d" $c`
-		cat $SCOREFILE | head -n 100 | awk '{print $2}' | xargs $BINMOSAIC --db $TINYIMAGES -o $OUTDIR/summary_images/$o.result.jpg
-		cp $IMGFILE $OUTDIR/summary_images/$o.query.jpg
 		c=$((c+1))
+
+		# create the image of the results
+		cat $SCOREFILE | head -n 100 | awk '{print $2}' | xargs $BINMOSAIC --db $TINYIMAGES -o $OUTDIR/summary_images/$o.result.png
+		# query image
+		cp $IMGFILE $OUTDIR/summary_images/$o.query.png
+		
+		if [ -e $FILTEREDFILE ]; then
+			cp $FILTEREDFILE $OUTDIR/summary_images/$o.query.filtered.png
+		fi
 	done
-	convert $OUTDIR/summary_images/*.jpg $OUTDIR/summary.pdf
+	convert $OUTDIR/summary_images/*.png $OUTDIR/summary.pdf
 	echo "done"
 fi
 

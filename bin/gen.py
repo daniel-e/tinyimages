@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from imageprocessing import flatten_rgb_image
+from parallel import process
 
 import cv2, random, argparse, sys
 import numpy as np
@@ -19,8 +20,8 @@ random.seed(args.seed)
 
 def newimg():
 	# some noise
-	c = [random.randint(150, 255) for i in range(WIDTH * HEIGHT * 3)]
-	return np.reshape(np.array(c, np.uint8), (HEIGHT, WIDTH, 3), np.uint8).copy()
+	x = np.random.rand(HEIGHT, WIDTH, 3) * 150 + 105
+	return np.uint8(x).copy()
 
 def color():
 	# BGR
@@ -55,15 +56,20 @@ def triangle(img):
 	cv2.line(img, (WIDTH - 6, HEIGHT - 6), (WIDTH / 2, 6), c, t)
 	return img
 
+
+def docreate(job):
+	l, f = job
+	img = cv2.resize(f(newimg()), (32, 32))
+	return (l, "".join([chr(j) for j in flatten_rgb_image(img)]))
+
 functions = [triangle, line1, line2, rect, circle]
 f = open(args.o, "w")
 fl = open(args.l, "w")
-for i in xrange(args.n):
-	for l, fcn in enumerate(functions):
-		img = cv2.resize(fcn(newimg()), (32, 32))
-		d = "".join([chr(j) for j in flatten_rgb_image(img)])
-		f.write(d)
-		print >> fl, l
-		#cv2.imshow('test', img)
-		#cv2.waitKey()
+
+jobs = [(l, fcn) for l, fcn in enumerate(functions)] * args.n
+for l, r in process(jobs, docreate):
+	f.write(r)
+	print >> fl, l
+	#cv2.imshow('test', img)
+	#cv2.waitKey()
 
